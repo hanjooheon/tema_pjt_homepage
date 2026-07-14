@@ -1,0 +1,9 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[[redirects]]
+  # Vue Router history 모드 대응 (새로고침 시 404 방지)
+  from = "/*"
+  to = "/index.html"
+  status = 200
