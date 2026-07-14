@@ -7,10 +7,13 @@ import { CURRENT_REGION } from '../data/regions.js'
 
 const router = useRouter()
 const keyword = ref('')
+const sortBy = ref('latest')
 const posts = ref([])
 
 function refresh() {
-  posts.value = keyword.value.trim() ? searchPosts(keyword.value) : getPosts()
+  posts.value = keyword.value.trim()
+    ? searchPosts(keyword.value, sortBy.value)
+    : getPosts(sortBy.value)
 }
 
 onMounted(refresh)
@@ -32,6 +35,10 @@ function goWrite() {
         @keyup.enter="refresh"
       />
       <button class="btn" @click="refresh">검색</button>
+      <select v-model="sortBy" @change="refresh" class="sort-select">
+        <option value="latest">최신순</option>
+        <option value="likes">좋아요순</option>
+      </select>
       <button class="btn btn-primary" @click="goWrite">+ 글쓰기</button>
     </div>
 
@@ -48,6 +55,13 @@ function goWrite() {
 
 .toolbar input {
   flex: 1;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+}
+
+.sort-select {
   padding: 10px 12px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);

@@ -9,7 +9,6 @@ const props = defineProps({
 
 const page = ref(1)
 
-// 검색어가 바뀌어 목록이 갱신되면 1페이지로 리셋
 watch(
   () => props.posts,
   () => {
@@ -46,6 +45,11 @@ function formatDate(timestamp) {
         <td class="col-no">{{ posts.length - ((page - 1) * pageSize + idx) }}</td>
         <td>
           <RouterLink :to="`/board/${post.id}`" class="title-link">{{ post.title }}</RouterLink>
+          <div class="meta">
+            <span>{{ post.nickname || '익명' }}</span>
+            <span>좋아요 {{ post.likes ?? 0 }}</span>
+            <span>댓글 {{ (post.comments || []).length }}</span>
+          </div>
         </td>
         <td class="col-date">{{ formatDate(post.createdAt) }}</td>
       </tr>
@@ -102,6 +106,14 @@ th {
 
 .title-link:hover {
   color: var(--color-primary);
+}
+
+.meta {
+  margin-top: 4px;
+  font-size: 0.8rem;
+  color: var(--color-ink-muted);
+  display: flex;
+  gap: 10px;
 }
 
 .empty {
