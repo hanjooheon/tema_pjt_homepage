@@ -284,16 +284,6 @@ function goToCurrentLocation() {
   if (!map || !currentLocation.value) return
   try {
     map.flyTo([currentLocation.value.lat, currentLocation.value.lng], 14, { duration: 0.8 })
-    // briefly highlight user's marker by setting view; if needed, open nearest marker popup
-    // find nearest marker and open its popup (optional)
-    try {
-      const nearest = sortedPlacesAll.value[0]
-      const m = nearest && markersMap.get(String(nearest.id))
-      if (m && m.openPopup) {
-        // open after a short delay so the map animation completes
-        setTimeout(() => m.openPopup(), 500)
-      }
-    } catch (e) {}
   } catch (err) {
     console.error('goToCurrentLocation error', err)
   }
