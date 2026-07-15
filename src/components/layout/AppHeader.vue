@@ -5,6 +5,7 @@ import { REGIONS } from '../../data/regions.js'
 
 const route = useRoute()
 const isMapActive = computed(() => route.name === 'map')
+const isBoardActive = computed(() => route.name && String(route.name).startsWith('board'))
 </script>
 
 <template>
@@ -25,6 +26,9 @@ const isMapActive = computed(() => route.name === 'map')
 
         <RouterLink to="/map" class="region-tab" :class="{ active: isMapActive }">
           지도
+        </RouterLink>
+        <RouterLink to="/board" class="region-tab" :class="{ active: isBoardActive }">
+          게시글
         </RouterLink>
       </nav>
 
