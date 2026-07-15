@@ -5,13 +5,13 @@ import { REGIONS } from '../../data/regions.js'
 
 <template>
   <section class="hero card">
-    <h1>지역 정보 공유 커뮤니티 LocalHub</h1>
-    <p>5개 권역의 생생한 정보를 한눈에 만나보세요</p>
+    <h1>SSAFY SPOT</h1>
+    <p>현지 SSAFY생이 추천하는 우리 동네 점심 맛집</p>
   </section>
 
   <div class="region-grid">
     <div v-for="region in REGIONS" :key="region.code" class="region-card card" :class="{ inactive: !region.active }">
-      <div class="thumb" aria-hidden="true">🗺️</div>
+      <div class="thumb" aria-hidden="true">{{ region.emoji }}</div>
       <p class="name">{{ region.name }}</p>
       <RouterLink v-if="region.active" to="/board" class="link">바로가기 &gt;</RouterLink>
       <span v-else class="link muted">준비중</span>
@@ -29,8 +29,12 @@ import { REGIONS } from '../../data/regions.js'
 }
 
 .hero h1 {
-  font-size: 1.6rem;
+  font-size: 2.8rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
   color: var(--color-primary-dark);
+  font-family: 'Comic Sans MS', 'Trebuchet MS', cursive;
+  margin-bottom: 10px;
 }
 
 .hero p {

@@ -1,18 +1,28 @@
 <script setup>
 import { nextTick, ref, watch } from 'vue'
+import { REGIONS } from '../../data/regions.js'
 import { useChatbot } from '../../composables/useChatbot.js'
 import ChatMessage from './ChatMessage.vue'
 
 const isOpen = ref(false)
 const input = ref('')
 const scrollArea = ref(null)
+const quickRegions = REGIONS.map((region) => ({
+  code: region.code,
+  label: region.name
+}))
 
 const { messages, isLoading, sendMessage } = useChatbot()
 
-async function handleSend() {
-  const text = input.value
+async function handleSend(text = input.value) {
+  const value = text?.trim()
+  if (!value) return
   input.value = ''
-  await sendMessage(text)
+  await sendMessage(value)
+}
+
+function selectRegion(regionName) {
+  handleSend(`${regionName}에 대해 알려줘`)
 }
 
 // 새 메시지가 오면 스크롤을 맨 아래로
@@ -39,8 +49,23 @@ watch(messages, async () => {
     </header>
 
     <div ref="scrollArea" class="chat-body">
-      <ChatMessage v-for="(m, idx) in messages" :key="idx" :role="m.role" :content="m.content" />
-      <div v-if="isLoading" class="typing">입력 중...</div>
+      <ChatMessage v-if="messages.length > 0" :role="messages[0].role" :content="messages[0].content" />
+      <div v-if="messages.length === 1" class="empty-state">
+        <p>어떤 지역이 궁금하신가요?</p>
+        <div class="region-buttons">
+          <button
+            v-for="region in quickRegions"
+            :key="region.code"
+            type="button"
+            class="region-chip"
+            @click="selectRegion(region.label)"
+          >
+            {{ region.label }}
+          </button>
+        </div>
+      </div>
+      <ChatMessage v-for="(m, idx) in messages.slice(1)" :key="idx" :role="m.role" :content="m.content" />
+      <div v-if="isLoading" class="typing">답변을 준비 중이에요...</div>
     </div>
 
     <form class="chat-input" @submit.prevent="handleSend">
@@ -117,8 +142,40 @@ watch(messages, async () => {
   color: var(--color-ink-muted);
 }
 
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 6px 2px 0;
+}
+
+.empty-state p {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--color-primary-dark);
+}
+
+.region-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.region-chip {
+  border: 1px solid var(--color-primary-soft);
+  background: #fff;
+  color: var(--color-primary);
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
 .chat-input {
   display: flex;
+  flex-direction: row;
+  align-items: center;
   gap: 8px;
   padding: 10px;
   border-top: 1px solid var(--color-border);
@@ -126,9 +183,14 @@ watch(messages, async () => {
 
 .chat-input input {
   flex: 1;
+  min-width: 0;
   padding: 8px 10px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
+}
+
+.chat-input button {
+  flex-shrink: 0;
 }
 
 /* RFP 참고4: 모바일에서는 전체 화면으로 표시 */
