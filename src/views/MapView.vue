@@ -14,6 +14,8 @@ let markersLayer = null
 let userMarker = null
 let accuracyCircle = null
 let watchId = null
+let markersMap = new Map()
+let highlightedMarkerId = null
 
 const categoryMeta = [
   { key: 'tourist', label: '관광지', color: '#2ec7a9', icon: '🏛️' },
@@ -26,9 +28,16 @@ const categoryMeta = [
 
 const categoryMap = Object.fromEntries(categoryMeta.map((category) => [category.key, category]))
 
-const visiblePlaces = computed(() =>
-  places.value.filter((place) => selectedCategoryKeys.value.includes(place.categoryKey))
-)
+const searchQuery = ref('')
+
+const visiblePlaces = computed(() => {
+  const q = String(searchQuery.value || '').trim().toLowerCase()
+  return places.value.filter((place) => {
+    if (!selectedCategoryKeys.value.includes(place.categoryKey)) return false
+    if (!q) return true
+    return String(place.name || '').toLowerCase().includes(q)
+  })
+})
 
 const sortedPlaces = computed(() => {
   if (!currentLocation.value) {
@@ -80,8 +89,23 @@ function selectPlace(placeId) {
   if (!targetPlace || !map) {
     return
   }
-
   map.flyTo([targetPlace.lat, targetPlace.lng], 15, { duration: 1 })
+  // open popup and highlight marker
+  const m = markersMap.get(String(placeId))
+  if (m && m.openPopup) {
+    m.openPopup()
+  }
+
+  // update icons: re-render markers to reflect highlight (cheap approach)
+  if (window.L && map) {
+    renderMarkers(window.L)
+  }
+
+  // try again shortly after re-render (markersMap may be rebuilt)
+  setTimeout(() => {
+    const m2 = markersMap.get(String(placeId))
+    if (m2 && m2.openPopup) m2.openPopup()
+  }, 300)
 }
 
 function ensureLeaflet() {
@@ -123,12 +147,38 @@ function initMap(L) {
   renderMarkers(L)
 }
 
+// helper: sanitize id for DOM and carousel controller
+function _sanitizeId(id) {
+  return String(id).replace(/[^a-zA-Z0-9_-]/g, '_')
+}
+
+// global carousel controller for Leaflet popups (attached to window for onclick handlers)
+if (!window.__leafletCarouselChange) {
+  window.__leafletCarouselChange = function (popupId, delta) {
+    try {
+      const container = document.getElementById(popupId)
+      if (!container) return
+      const imgs = JSON.parse(container.dataset.imgs || '[]')
+      if (!imgs.length) return
+      let idx = Number(container.dataset.idx || 0) + Number(delta)
+      if (idx < 0) idx = imgs.length - 1
+      if (idx >= imgs.length) idx = 0
+      container.dataset.idx = idx
+      const imgEl = container.querySelector('img.carousel-img')
+      if (imgEl) imgEl.src = imgs[idx] || ''
+    } catch (e) {
+      console.error('carousel change error', e)
+    }
+  }
+}
+
 function renderMarkers(L) {
   if (!markersLayer || !L) {
     return
   }
 
   markersLayer.clearLayers()
+  markersMap.clear()
 
   visiblePlaces.value.forEach((place) => {
     const meta = categoryMap[place.categoryKey]
@@ -136,18 +186,70 @@ function renderMarkers(L) {
       return
     }
 
+    // collect images from common fields
+    const images = []
+    if (place.firstimage) images.push(place.firstimage)
+    if (place.firstimage2) images.push(place.firstimage2)
+    if (place.image) images.push(place.image)
+    if (place.images && Array.isArray(place.images)) images.push(...place.images)
+    // dedupe & filter falsy
+    const uniqImgs = [...new Set((images || []).filter(Boolean))]
+
+    const popupId = `popup-${_sanitizeId(place.id ?? place.name ?? Math.random().toString(36).slice(2))}`
+    const imgsJson = JSON.stringify(uniqImgs).replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    const initialImg = uniqImgs[0] || ''
+
+    // telephone detection
+    const tel = place.tel ?? place.phone ?? place.telphone ?? place.contact ?? ''
+
+    // build HTML: image carousel if present
+    const carouselHtml = uniqImgs.length
+      ? `<div style="display:flex;align-items:center;gap:8px;justify-content:center;margin-bottom:8px;">
+           <button type="button" onclick="window.__leafletCarouselChange('${popupId}', -1)" style="border:1px solid #ddd;background:#fff;padding:4px 8px;cursor:pointer;">◀</button>
+           <img class="carousel-img" src="${initialImg}" alt="${place.name ?? ''}" style="max-width:220px;max-height:160px;object-fit:cover;border-radius:8px;border:1px solid #eee;" />
+           <button type="button" onclick="window.__leafletCarouselChange('${popupId}', 1)" style="border:1px solid #ddd;background:#fff;padding:4px 8px;cursor:pointer;">▶</button>
+         </div>`
+      : ''
+
+    const descHtml = place.description ? `<div style="margin-top:6px;color:#555;font-size:0.9rem;">${place.description}</div>` : ''
+    const extraFields = []
+    if (place.eventStartDate || place.eventEndDate) {
+      extraFields.push(`<div style="font-size:0.9rem;margin-top:6px;">기간: ${place.eventStartDate ?? ''} ${place.eventEndDate ? '— ' + place.eventEndDate : ''}</div>`)
+    }
+    if (place.playtime) extraFields.push(`<div style="font-size:0.9rem;margin-top:4px;">공연시간: ${place.playtime}</div>`)
+    if (place.ageLimit) extraFields.push(`<div style="font-size:0.9rem;margin-top:4px;">관람연령: ${place.ageLimit}</div>`)
+
+    const telHtml = `<div style="margin-top:6px;"><strong>전화:</strong> ${tel ? `<a href="tel:${tel}" style="color:#1e88e5;text-decoration:none;">${tel}</a>` : '<span style="color:#888">정보없음</span>'}</div>`
+
+    const popupHtml = `
+      <div id="${popupId}" data-imgs='${imgsJson}' data-idx="0" style="min-width:220px;">
+        <div style="font-weight:700;margin-bottom:6px;font-size:1rem;">${place.name ?? ''}</div>
+        ${carouselHtml}
+        <div style="color:#444;font-size:0.95rem;">${place.address ?? ''}</div>
+        ${telHtml}
+        ${descHtml}
+        ${extraFields.join('')}
+      </div>
+    `
+
+    // choose icon, highlight if this is the selected place
+    const isHighlighted = selectedPlaceId.value && String(selectedPlaceId.value) === String(place.id)
+    const size = isHighlighted ? 44 : 32
+    const border = isHighlighted ? 4 : 2
     const icon = L.divIcon({
-      html: `<div style="background:${meta.color}; width:32px; height:32px; border-radius:999px; display:flex; align-items:center; justify-content:center; color:white; border:2px solid white; box-shadow:0 3px 8px rgba(0,0,0,.25); font-size:16px;">${meta.icon}</div>`,
+      html: `<div style="background:${meta.color}; width:${size}px; height:${size}px; border-radius:999px; display:flex; align-items:center; justify-content:center; color:white; border:${border}px solid white; box-shadow:0 3px 12px rgba(0,0,0,.3); font-size:16px;">${meta.icon}</div>`,
       className: 'custom-marker-icon',
-      iconSize: [32, 32],
-      iconAnchor: [16, 16]
+      iconSize: [size, size],
+      iconAnchor: [Math.floor(size/2), Math.floor(size/2)]
     })
 
     const marker = L.marker([place.lat, place.lng], { icon }).addTo(markersLayer)
-    marker.bindPopup(`<strong>${place.name}</strong><br>${place.address}`)
+    marker.bindPopup(popupHtml, { maxWidth: 320 })
     marker.on('click', () => {
       selectedPlaceId.value = place.id
     })
+    // store marker for later control (openPopup / highlight)
+    try { markersMap.set(String(place.id), marker) } catch (e) {}
   })
 }
 
@@ -238,6 +340,11 @@ watch(selectedCategoryKeys, () => {
   }
 })
 
+// re-render markers when places/search/category changes
+watch([places, selectedCategoryKeys, searchQuery], () => {
+  if (window.L && map) renderMarkers(window.L)
+}, { deep: true })
+
 onBeforeUnmount(() => {
   if (watchId !== null && navigator.geolocation) {
     navigator.geolocation.clearWatch(watchId)
@@ -252,11 +359,7 @@ onBeforeUnmount(() => {
   <section class="map-page">
     <div class="map-toolbar">
       <div>
-        <p class="eyebrow">서울 지도</p>
-        <h1>카테고리별 업체를 지도에서 바로 확인하세요</h1>
-        <p class="summary">
-          내 위치 기준으로 가까운 순으로 정렬하고, 원하는 카테고리만 골라볼 수 있습니다.
-        </p>
+        <!-- toolbar title removed per request -->
       </div>
 
       <div class="filter-chips">
@@ -276,6 +379,9 @@ onBeforeUnmount(() => {
 
     <div class="map-layout">
       <aside class="place-list">
+        <div style="padding-bottom:10px;">
+          <input v-model="searchQuery" type="search" placeholder="검색어를 입력하세요" style="padding:8px;border:1px solid var(--color-border);border-radius:8px;min-width:200px;width:100%;box-sizing:border-box;" />
+        </div>
         <div class="list-header">
           <div>
             <p class="eyebrow">근처 목록</p>

@@ -32,8 +32,8 @@ function normalizeItem(raw, categoryKey) {
     categoryKey,
     name: raw.title || '',
     address: [raw.addr1, raw.addr2].filter(Boolean).join(' ').trim(),
-    tel: raw.tel || '',
-    image: raw.firstimage || raw.firstimage2 || '',
+    tel: raw.tel || raw.phone || raw.telephone || raw.telphone || raw.tel_no || raw.tel1 || '',
+    image: raw.firstimage || raw.firstimage2 || raw.image || '',
     lat: Number.isFinite(lat) ? lat : null,
     lng: Number.isFinite(lng) ? lng : null
   }
