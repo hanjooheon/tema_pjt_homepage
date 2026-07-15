@@ -19,6 +19,7 @@ function normalizePost(post) {
     nickname: post.nickname?.trim() || '익명',
     password: post.password ?? '',
     likes: post.likes ?? 0,
+    likedByUser: Boolean(post.likedByUser),
     comments: Array.isArray(post.comments) ? post.comments : [],
     views: post.views ?? 0,
     createdAt: post.createdAt ?? Date.now(),
@@ -68,6 +69,7 @@ export function createPost({ title, content, nickname, password }) {
     updatedAt: now,
     views: 0,
     likes: 0,
+    likedByUser: false,
     comments: []
   }
   posts.push(newPost)
@@ -116,13 +118,36 @@ export function searchPosts(keyword, sortBy = 'latest') {
 export function toggleLike(id) {
   const posts = readPosts()
   const target = posts.find((p) => p.id === id)
+
   if (!target) {
     return { ok: false, error: '게시글을 찾을 수 없습니다.' }
   }
+
+  if (target.likedByUser) {
+    target.likes = Math.max((target.likes ?? 0) - 1, 0)
+    target.likedByUser = false
+    target.updatedAt = Date.now()
+    writeList(STORAGE_KEY, posts)
+
+    return {
+      ok: true,
+      likes: target.likes,
+      likedByUser: target.likedByUser,
+      action: 'unlike'
+    }
+  }
+
   target.likes = (target.likes ?? 0) + 1
+  target.likedByUser = true
   target.updatedAt = Date.now()
   writeList(STORAGE_KEY, posts)
-  return { ok: true, likes: target.likes }
+
+  return {
+    ok: true,
+    likes: target.likes,
+    likedByUser: target.likedByUser,
+    action: 'like'
+  }
 }
 
 export function createComment(postId, { nickname, password, content }) {

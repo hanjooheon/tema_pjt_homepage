@@ -98,7 +98,9 @@ function saveCommentEdit(comment) {
 
 function handleLike() {
   const result = toggleLike(props.id)
-  if (result.ok) refreshPost()
+  if (result.ok) {
+    refreshPost()
+  }
 }
 
 function handleConfirm(password) {
@@ -158,7 +160,9 @@ function handleConfirm(password) {
       <div class="actions">
         <button class="btn" @click="router.push({ name: 'board-list' })">목록으로</button>
         <div class="right">
-          <button class="btn btn-primary" @click="handleLike">좋아요 {{ post.likes ?? 0 }}</button>
+          <button class="btn btn-primary" @click="handleLike">
+            {{ post.likedByUser ? '좋아요 취소' : '좋아요' }} {{ post.likes ?? 0 }}
+          </button>
           <button class="btn" @click="openModal('edit')">수정</button>
           <button class="btn btn-danger" @click="openModal('delete')">삭제</button>
         </div>
