@@ -5,26 +5,45 @@ import { REGIONS } from '../../data/regions.js'
 
 const route = useRoute()
 const isMapActive = computed(() => route.name === 'map')
+const isBoardActive = computed(() => route.name && String(route.name).startsWith('board'))
+
+const regionToCategoryKey = {
+  attractions: 'tourist',
+  leisure: 'leports',
+  culture: 'culture',
+  shopping: 'shopping',
+  accommodation: 'lodging',
+  events: 'festival'
+}
+
 </script>
 
 <template>
   <header class="header">
     <div class="header-inner">
-      <RouterLink to="/" class="logo">LocalHub</RouterLink>
+      <RouterLink to="/" class="logo">SSAFY SPOT</RouterLink>
 
       <nav class="region-tabs">
         <RouterLink
-          v-for="region in REGIONS"
-          :key="region.code"
-          :to="region.active ? '/board' : '#'"
-          class="region-tab"
-          :class="{ active: region.active, disabled: !region.active }"
-        >
-          {{ region.name }}
-        </RouterLink>
+  v-for="region in REGIONS"
+  :key="region.code"
+  :to="region.active
+    ? (regionToCategoryKey[region.code]
+      ? { path: '/places', query: { category: regionToCategoryKey[region.code] } }
+      : '/board')
+    : '#'"
+  class="region-tab"
+  :class="{ active: region.active && (route.path.startsWith('/places') ? route.query.category === regionToCategoryKey[region.code] : (route.name && String(route.name).startsWith('board'))), disabled: !region.active }"
+>
+  {{ region.name }}
+</RouterLink>
+
 
         <RouterLink to="/map" class="region-tab" :class="{ active: isMapActive }">
           지도
+        </RouterLink>
+        <RouterLink to="/board" class="region-tab" :class="{ active: isBoardActive }">
+          게시글
         </RouterLink>
       </nav>
 
@@ -53,9 +72,10 @@ const isMapActive = computed(() => route.name === 'map')
 }
 
 .logo {
-  font-family: var(--font-display);
-  font-size: 1.4rem;
-  font-weight: 700;
+  font-family: 'Comic Sans MS', 'Trebuchet MS', cursive;
+  font-size: 1.5rem;
+  font-weight: 900;
+  letter-spacing: -0.01em;
   color: var(--color-primary-dark);
   white-space: nowrap;
 }
@@ -68,24 +88,32 @@ const isMapActive = computed(() => route.name === 'map')
 }
 
 .region-tab {
-  padding: 8px 12px;
+  padding: 6px 10px;
   border-radius: var(--radius-sm);
   font-size: 0.88rem;
   font-weight: 600;
-  color: var(--color-ink-muted);
+  color: #16a34a;
+  background: #dcfce7;
   white-space: nowrap;
-}
-
-.region-tab.active {
-  color: var(--color-primary-dark);
-  background: var(--color-primary-soft);
+  transition: background 120ms ease, transform 80ms ease;
 }
 
 .region-tab.disabled {
   color: #C4C9BC;
+  background: transparent;
   cursor: not-allowed;
   pointer-events: none;
 }
+
+.region-tab.active {
+  color: #16a34a;            /* 초록색 글자 */
+  background: #dcfce7;       /* 연두빛 배경(네모) */
+  border-radius: var(--radius-sm);
+  box-shadow: 0 0 0 3px rgba(22,163,74,0.06); /* 선택 강조(선택 사항) */
+}
+
+
+
 
 .search-icon {
   border: none;

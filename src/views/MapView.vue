@@ -1,5 +1,6 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { getAllItems } from '../services/dataService.js' // 데이터 서비스 임포트
 
 const mapContainer = ref(null)
@@ -7,6 +8,7 @@ const errorMessage = ref('')
 const places = ref([])
 const currentLocation = ref(null)
 const selectedCategoryKeys = ref([])
+const route = useRoute()
 const selectedPlaceId = ref(null)
 
 let map = null
@@ -18,9 +20,9 @@ let markersMap = new Map()
 let highlightedMarkerId = null
 
 const categoryMeta = [
-  { key: 'tourist', label: '관광지', color: '#2ec7a9', icon: '🏛️' },
-  { key: 'leports', label: '레포츠', color: '#4dabf7', icon: '🚴' },
-  { key: 'culture', label: '문화시설', color: '#845ef7', icon: '🎭' },
+  { key: 'tourist', label: '관광지', color: '#2ec7a9', icon: '📸'},
+  { key: 'leports', label: '레포츠', color: '#4dabf7', icon: '🚴'},
+  { key: 'culture', label: '문화시설', color: '#845ef7', icon: '🏛️'},
   { key: 'shopping', label: '쇼핑', color: '#ff922b', icon: '🛍️' },
   { key: 'lodging', label: '숙박', color: '#15aabf', icon: '🏨' },
   { key: 'festival', label: '축제공연행사', color: '#ff8787', icon: '🎉' }
@@ -299,7 +301,13 @@ async function loadPlaces() {
       return ok
     })
 
-    selectedCategoryKeys.value = categoryMeta.map((category) => category.key)
+    // 기본 선택 카테고리: 쿼리 파라미터 `category`가 있으면 해당 카테고리만 선택
+    const queryCategory = route.query.category
+    if (queryCategory && categoryMap[queryCategory]) {
+      selectedCategoryKeys.value = [queryCategory]
+    } else {
+      selectedCategoryKeys.value = categoryMeta.map((category) => category.key)
+    }
 
     // 맵이 이미 초기화되어 있으면 마커 재렌더링
     if (window.L && map) {
@@ -340,11 +348,6 @@ watch(selectedCategoryKeys, () => {
   }
 })
 
-// re-render markers when places/search/category changes
-watch([places, selectedCategoryKeys, searchQuery], () => {
-  if (window.L && map) renderMarkers(window.L)
-}, { deep: true })
-
 onBeforeUnmount(() => {
   if (watchId !== null && navigator.geolocation) {
     navigator.geolocation.clearWatch(watchId)
@@ -359,7 +362,11 @@ onBeforeUnmount(() => {
   <section class="map-page">
     <div class="map-toolbar">
       <div>
-        <!-- toolbar title removed per request -->
+        <p class="eyebrow">서울 지도</p>
+        <h1>카테고리별 업체를 지도에서 바로 확인하세요</h1>
+        <p class="summary">
+          내 위치 기준으로 가까운 순으로 정렬하고, 원하는 카테고리만 골라볼 수 있습니다.
+        </p>
       </div>
 
       <div class="filter-chips">
@@ -416,6 +423,7 @@ onBeforeUnmount(() => {
         <div ref="mapContainer" class="map-container"></div>
         <div class="map-status">{{ errorMessage || '현재 위치는 파란 점으로 표시됩니다.' }}</div>
       </div>
+      
     </div>
   </section>
 </template>
@@ -602,6 +610,9 @@ h1 {
   box-shadow: 0 12px 32px rgba(31, 41, 55, 0.08);
   background: white;
 }
+
+
+/* (top action buttons removed; header shows global links) */
 
 .map-container {
   width: 100%;
