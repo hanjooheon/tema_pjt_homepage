@@ -1,6 +1,10 @@
 <script setup>
-import { RouterLink } from 'vue-router'
+import { computed } from 'vue'
+import { RouterLink, useRoute } from 'vue-router'
 import { REGIONS } from '../../data/regions.js'
+
+const route = useRoute()
+const isMapActive = computed(() => route.name === 'map')
 </script>
 
 <template>
@@ -18,10 +22,12 @@ import { REGIONS } from '../../data/regions.js'
         >
           {{ region.name }}
         </RouterLink>
+
+        <RouterLink to="/map" class="region-tab" :class="{ active: isMapActive }">
+          지도
+        </RouterLink>
       </nav>
 
-      <!-- TODO(선택 기능 - 게시글 검색 담당자): 헤더 검색 아이콘을 눌렀을 때
-           /board 로 이동 + 검색어 쿼리스트링 전달 등으로 확장 가능 -->
       <button class="search-icon" aria-label="검색" type="button">⌕</button>
     </div>
   </header>

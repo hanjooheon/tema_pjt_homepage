@@ -27,9 +27,12 @@ const routes = [
     name: 'board-detail',
     component: () => import('../views/BoardDetailView.vue'),
     props: true
+  },
+  {
+    path: '/map',
+    name: 'map',
+    component: () => import('../views/MapView.vue')
   }
-  // TODO(선택 기능 담당자): 지도 시각화 화면을 별도 라우트로 뺄 경우 여기에 추가
-  // { path: '/map', name: 'map', component: () => import('../views/MapView.vue') }
 ]
 
 const router = createRouter({
