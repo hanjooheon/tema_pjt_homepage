@@ -24,7 +24,14 @@ const pagedPosts = computed(() => {
 })
 
 function formatDate(timestamp) {
-  return new Date(timestamp).toISOString().slice(2, 10).replace(/-/g, '.')
+  if (!timestamp) return '-'
+  try {
+    const date = new Date(timestamp)
+    if (isNaN(date.getTime())) return '-' // 올바르지 않은 날짜 형식일 때
+    return date.toISOString().slice(2, 10).replace(/-/g, '.')
+  } catch (e) {
+    return '-'
+  }
 }
 </script>
 
@@ -44,11 +51,17 @@ function formatDate(timestamp) {
       <tr v-for="(post, idx) in pagedPosts" :key="post.id">
         <td class="col-no">{{ posts.length - ((page - 1) * pageSize + idx) }}</td>
         <td>
-          <RouterLink :to="`/board/${post.id}`" class="title-link">{{ post.title }}</RouterLink>
+          <div class="title-row">
+            <div class="title-wrapper">
+              <RouterLink :to="`/board/${post.id}`" class="title-link">{{ post.title }}</RouterLink>
+            </div>
+            <div class="stats">
+              <span>좋아요 {{ post.likes ?? 0 }}</span>
+              <span>댓글 {{ (post.comments || []).length }}</span>
+            </div>
+          </div>
           <div class="meta">
             <span>{{ post.nickname || '익명' }}</span>
-            <span>좋아요 {{ post.likes ?? 0 }}</span>
-            <span>댓글 {{ (post.comments || []).length }}</span>
           </div>
         </td>
         <td class="col-date">{{ formatDate(post.createdAt) }}</td>
@@ -100,8 +113,24 @@ th {
   color: var(--color-ink-muted);
 }
 
+.title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.title-wrapper {
+  flex: 1;
+  min-width: 0; /* flex 자식 요소의 말줄임 적용을 위한 필수 설정 */
+}
+
 .title-link {
   font-weight: 600;
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; /* 제목이 너무 길면 ... 으로 표시 */
 }
 
 .title-link:hover {
@@ -112,8 +141,6 @@ th {
   margin-top: 4px;
   font-size: 0.8rem;
   color: var(--color-ink-muted);
-  display: flex;
-  gap: 10px;
 }
 
 .empty {
@@ -132,5 +159,14 @@ th {
 .page-num.active {
   background: var(--color-primary-soft);
   color: var(--color-primary-dark);
+}
+
+.stats {
+  display: flex;
+  gap: 10px;
+  font-size: 0.8rem;
+  color: var(--color-ink-muted);
+  white-space: nowrap;
+  flex-shrink: 0; 
 }
 </style>
