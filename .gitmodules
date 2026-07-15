@@ -1,0 +1,3 @@
+[submodule "ssafy_spot"]
+	path = ssafy_spot
+	url = https://lab.ssafy.com/hanjooheon/ssafy_spot.git
