@@ -560,6 +560,7 @@ h1 {
   box-shadow: 0 10px 30px rgba(31, 41, 55, 0.06);
   display: flex;
   flex-direction: column;
+  max-height: 680px;
 }
 
 .list-header {
@@ -591,7 +592,7 @@ h1 {
   flex-direction: column;
   gap: 12px;
   overflow: auto;
-  max-height: 600px;
+  flex: 1 1 auto;
 }
 
 .place-item {
