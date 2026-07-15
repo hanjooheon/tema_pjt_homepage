@@ -547,9 +547,9 @@ h1 {
   max-width: 1200px;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: minmax(260px, 340px) 1fr;
-  gap: 16px;
-  min-height: 420px;
+  grid-template-columns: minmax(320px, 420px) 1fr;
+  gap: 20px;
+  min-height: 720px;
 }
 
 .place-list {
@@ -589,9 +589,9 @@ h1 {
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
   overflow: auto;
-  max-height: 420px;
+  max-height: 600px;
 }
 
 .place-item {
@@ -664,7 +664,7 @@ h1 {
 .map-container {
   width: 100%;
   height: 100%;
-  min-height: 420px;
+  min-height: 640px;
 }
 
 .map-status {
@@ -731,7 +731,7 @@ h1 {
 
   .map-panel {
     order: 1;
-    min-height: 420px;
+    min-height: 540px;
   }
 }
 
