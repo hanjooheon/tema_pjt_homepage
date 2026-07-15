@@ -41,7 +41,10 @@ const visiblePlaces = computed(() => {
   })
 })
 
-const sortedPlaces = computed(() => {
+// limit how many nearby items are shown in the side list
+const maxListItems = ref(5)
+
+const sortedPlacesAll = computed(() => {
   if (!currentLocation.value) {
     return visiblePlaces.value
   }
@@ -52,6 +55,12 @@ const sortedPlaces = computed(() => {
     return leftDistance - rightDistance
   })
 })
+
+const sortedPlaces = computed(() => {
+  return sortedPlacesAll.value.slice(0, maxListItems.value)
+})
+
+const totalNearbyCount = computed(() => sortedPlacesAll.value.length)
 
 function distanceKm(lat1, lng1, lat2, lng2) {
   const toRad = (value) => (value * Math.PI) / 180
@@ -182,7 +191,9 @@ function renderMarkers(L) {
   markersLayer.clearLayers()
   markersMap.clear()
 
-  visiblePlaces.value.forEach((place) => {
+  // show markers for all visible/sorted places (do not limit markers)
+  const placesToShow = sortedPlacesAll.value
+  placesToShow.forEach((place) => {
     const meta = categoryMap[place.categoryKey]
     if (!meta || !place.lat || !place.lng) {
       return
@@ -253,6 +264,39 @@ function renderMarkers(L) {
     // store marker for later control (openPopup / highlight)
     try { markersMap.set(String(place.id), marker) } catch (e) {}
   })
+}
+
+function onListScroll(e) {
+  try {
+    const el = e.target
+    if (!(el && el.scrollTop !== undefined)) return
+    // when scrolled near the bottom, increase the shown list items by 5
+    if (maxListItems.value >= totalNearbyCount.value) return
+    if (el.scrollTop + el.clientHeight >= el.scrollHeight - 30) {
+      maxListItems.value = Math.min(totalNearbyCount.value, maxListItems.value + 5)
+    }
+  } catch (err) {
+    console.error('onListScroll error', err)
+  }
+}
+
+function goToCurrentLocation() {
+  if (!map || !currentLocation.value) return
+  try {
+    map.flyTo([currentLocation.value.lat, currentLocation.value.lng], 14, { duration: 0.8 })
+    // briefly highlight user's marker by setting view; if needed, open nearest marker popup
+    // find nearest marker and open its popup (optional)
+    try {
+      const nearest = sortedPlacesAll.value[0]
+      const m = nearest && markersMap.get(String(nearest.id))
+      if (m && m.openPopup) {
+        // open after a short delay so the map animation completes
+        setTimeout(() => m.openPopup(), 500)
+      }
+    } catch (e) {}
+  } catch (err) {
+    console.error('goToCurrentLocation error', err)
+  }
 }
 
 function updateUserLocation(L, coords) {
@@ -394,10 +438,10 @@ onBeforeUnmount(() => {
             <p class="eyebrow">근처 목록</p>
             <h2>가까운 순</h2>
           </div>
-          <span class="list-count">{{ sortedPlaces.length }}개</span>
+          <span class="list-count">{{ sortedPlaces.length }} / {{ totalNearbyCount }}개 (상위 {{ maxListItems }}개 표시)</span>
         </div>
 
-        <ul v-if="sortedPlaces.length" class="place-items">
+        <ul v-if="sortedPlaces.length" class="place-items" @scroll="onListScroll">
           <li
             v-for="place in sortedPlaces"
             :key="place.id"
@@ -421,7 +465,19 @@ onBeforeUnmount(() => {
 
       <div class="map-panel">
         <div ref="mapContainer" class="map-container"></div>
-        <div class="map-status">{{ errorMessage || '현재 위치는 파란 점으로 표시됩니다.' }}</div>
+          <button
+            class="locate-btn"
+            :class="{ disabled: !currentLocation }
+            "
+            :disabled="!currentLocation"
+            type="button"
+            @click="goToCurrentLocation"
+            title="내 위치로 이동"
+          >
+            📍 내 위치로
+          </button>
+
+          <div class="map-status">{{ errorMessage || '현재 위치는 파란 점으로 표시됩니다.' }}</div>
       </div>
       
     </div>
@@ -501,9 +557,9 @@ h1 {
   max-width: 1200px;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: minmax(280px, 360px) 1fr;
-  gap: 18px;
-  min-height: 640px;
+  grid-template-columns: minmax(260px, 340px) 1fr;
+  gap: 16px;
+  min-height: 420px;
 }
 
 .place-list {
@@ -545,6 +601,7 @@ h1 {
   flex-direction: column;
   gap: 10px;
   overflow: auto;
+  max-height: 420px;
 }
 
 .place-item {
@@ -617,7 +674,7 @@ h1 {
 .map-container {
   width: 100%;
   height: 100%;
-  min-height: 620px;
+  min-height: 420px;
 }
 
 .map-status {
@@ -636,6 +693,28 @@ h1 {
 .custom-marker-icon {
   background: transparent;
   border: none;
+}
+
+.locate-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 520;
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 8px 10px;
+  box-shadow: 0 8px 20px rgba(31,41,55,0.08);
+  cursor: pointer;
+  font-size: 0.92rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.locate-btn.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 @media (max-width: 900px) {
@@ -662,7 +741,7 @@ h1 {
 
   .map-panel {
     order: 1;
-    min-height: 460px;
+    min-height: 420px;
   }
 }
 
@@ -676,7 +755,7 @@ h1 {
   }
 
   .map-container {
-    min-height: 480px;
+    min-height: 420px;
   }
 
   .map-status {
