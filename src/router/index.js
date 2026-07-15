@@ -33,6 +33,12 @@ const routes = [
     name: 'map',
     component: () => import('../views/MapView.vue')
   }
+  ,
+  {
+    path: '/places',
+    name: 'places-list',
+    component: () => import('../views/CategoryListView.vue')
+  }
 ]
 
 const router = createRouter({

@@ -1,6 +1,16 @@
 <script setup>
 import { RouterLink } from 'vue-router'
 import { REGIONS } from '../../data/regions.js'
+
+// region.code -> map categoryKey 매핑
+const regionToCategoryKey = {
+  attractions: 'tourist',
+  leisure: 'leports',
+  culture: 'culture',
+  shopping: 'shopping',
+  accommodation: 'lodging',
+  events: 'festival'
+}
 </script>
 
 <template>
@@ -13,7 +23,15 @@ import { REGIONS } from '../../data/regions.js'
     <div v-for="region in REGIONS" :key="region.code" class="region-card card" :class="{ inactive: !region.active }">
       <div class="thumb" aria-hidden="true">{{ region.emoji }}</div>
       <p class="name">{{ region.name }}</p>
-      <RouterLink v-if="region.active" to="/board" class="link">바로가기 &gt;</RouterLink>
+      <RouterLink
+        v-if="region.active"
+        :to="regionToCategoryKey[region.code]
+          ? { path: '/places', query: { category: regionToCategoryKey[region.code] } }
+          : '/board'"
+        class="link"
+      >
+        바로가기 &gt;
+      </RouterLink>
       <span v-else class="link muted">준비중</span>
     </div>
   </div>

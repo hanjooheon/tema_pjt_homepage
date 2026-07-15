@@ -1,5 +1,6 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { getAllItems } from '../services/dataService.js' // 데이터 서비스 임포트
 
 const mapContainer = ref(null)
@@ -7,6 +8,7 @@ const errorMessage = ref('')
 const places = ref([])
 const currentLocation = ref(null)
 const selectedCategoryKeys = ref([])
+const route = useRoute()
 const selectedPlaceId = ref(null)
 
 let map = null
@@ -197,7 +199,13 @@ async function loadPlaces() {
       return ok
     })
 
-    selectedCategoryKeys.value = categoryMeta.map((category) => category.key)
+    // 기본 선택 카테고리: 쿼리 파라미터 `category`가 있으면 해당 카테고리만 선택
+    const queryCategory = route.query.category
+    if (queryCategory && categoryMap[queryCategory]) {
+      selectedCategoryKeys.value = [queryCategory]
+    } else {
+      selectedCategoryKeys.value = categoryMeta.map((category) => category.key)
+    }
 
     // 맵이 이미 초기화되어 있으면 마커 재렌더링
     if (window.L && map) {
@@ -238,6 +246,8 @@ watch(selectedCategoryKeys, () => {
   }
 })
 
+// no-op
+
 onBeforeUnmount(() => {
   if (watchId !== null && navigator.geolocation) {
     navigator.geolocation.clearWatch(watchId)
@@ -257,6 +267,7 @@ onBeforeUnmount(() => {
         <p class="summary">
           내 위치 기준으로 가까운 순으로 정렬하고, 원하는 카테고리만 골라볼 수 있습니다.
         </p>
+        
       </div>
 
       <div class="filter-chips">
@@ -310,6 +321,7 @@ onBeforeUnmount(() => {
         <div ref="mapContainer" class="map-container"></div>
         <div class="map-status">{{ errorMessage || '현재 위치는 파란 점으로 표시됩니다.' }}</div>
       </div>
+      
     </div>
   </section>
 </template>
@@ -496,6 +508,9 @@ h1 {
   box-shadow: 0 12px 32px rgba(31, 41, 55, 0.08);
   background: white;
 }
+
+
+/* (top action buttons removed; header shows global links) */
 
 .map-container {
   width: 100%;
