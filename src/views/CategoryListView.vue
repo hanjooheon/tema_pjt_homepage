@@ -4,10 +4,39 @@ import { useRoute, useRouter } from 'vue-router'
 import { getItemsByCategory } from '../services/dataService.js'
 
 const route = useRoute()
+
+const categoryLabels = {
+  tourist: '관광지',
+  leports: '레포츠',
+  culture: '문화시설',
+  shopping: '쇼핑',
+  lodging: '숙박',
+  festival: '축제공연행사'
+}
+
+const title = computed(() => {
+  const key = route.query.category
+  return (key && categoryLabels[key]) ? categoryLabels[key] : '관광지'
+})
+const categoryEmojis = {
+  tourist: '📸',
+  leports: '🚴',
+  culture: '🏛️',
+  shopping: '🛍️',
+  lodging: '🏨',
+  festival: '🎉' 
+}
+
+const emoji = computed(() => {
+  const key = route.query.category
+  return (key && categoryEmojis[key]) ? categoryEmojis[key] : '📍'
+})
 const router = useRouter()
 const items = ref([])
 const loading = ref(true)
 const keyword = ref('')
+
+
 
 async function load() {
   loading.value = true
@@ -43,11 +72,11 @@ const filteredItems = computed(() => {
 
 <template>
   <main class="page">
-    <p class="breadcrumb">홈 &gt; 카테고리 목록</p>
+    
+<h1><span class="title-emoji">{{ emoji }}</span> {{ title }}</h1>
 
     <section>
-      <h1>카테고리 항목</h1>
-
+      
       <div class="toolbar">
         <input v-model="keyword" type="text" placeholder="검색어를 입력하세요 (이름 또는 주소)" @keyup.enter="() => {}" />
         <button class="btn" @click="() => {}">검색</button>
@@ -70,6 +99,16 @@ const filteredItems = computed(() => {
 </template>
 
 <style scoped>
+
+h1 {
+  font-family: 'Pretendard', system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans KR', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  color: var(--color-primary-dark);
+  margin: 0 0 12px;
+}
+
 .toolbar {
   display: flex;
   gap: 16px;

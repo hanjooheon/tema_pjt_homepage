@@ -18,9 +18,9 @@ let accuracyCircle = null
 let watchId = null
 
 const categoryMeta = [
-  { key: 'tourist', label: '관광지', color: '#2ec7a9', icon: '🏛️' },
-  { key: 'leports', label: '레포츠', color: '#4dabf7', icon: '🚴' },
-  { key: 'culture', label: '문화시설', color: '#845ef7', icon: '🎭' },
+  { key: 'tourist', label: '관광지', color: '#2ec7a9', icon: '📸'},
+  { key: 'leports', label: '레포츠', color: '#4dabf7', icon: '🚴'},
+  { key: 'culture', label: '문화시설', color: '#845ef7', icon: '🏛️'},
   { key: 'shopping', label: '쇼핑', color: '#ff922b', icon: '🛍️' },
   { key: 'lodging', label: '숙박', color: '#15aabf', icon: '🏨' },
   { key: 'festival', label: '축제공연행사', color: '#ff8787', icon: '🎉' }

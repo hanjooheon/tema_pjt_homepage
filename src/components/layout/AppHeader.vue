@@ -21,7 +21,7 @@ const regionToCategoryKey = {
 <template>
   <header class="header">
     <div class="header-inner">
-      <RouterLink to="/" class="logo">SSAFYSPOT</RouterLink>
+      <RouterLink to="/" class="logo">SSAFY SPOT</RouterLink>
 
       <nav class="region-tabs">
         <RouterLink
@@ -72,9 +72,10 @@ const regionToCategoryKey = {
 }
 
 .logo {
-  font-family: var(--font-display);
-  font-size: 1.4rem;
-  font-weight: 700;
+  font-family: 'Comic Sans MS', 'Trebuchet MS', cursive;
+  font-size: 1.5rem;
+  font-weight: 900;
+  letter-spacing: -0.01em;
   color: var(--color-primary-dark);
   white-space: nowrap;
 }
@@ -87,14 +88,16 @@ const regionToCategoryKey = {
 }
 
 .region-tab {
-  padding: 8px 12px;
+  padding: 6px 10px;
   border-radius: var(--radius-sm);
   font-size: 0.88rem;
   font-weight: 600;
-  color: #16a34a;       /* 항상 보이는 초록색 글자 */
-  background: #dcfce7;  /* 항상 보이는 연두색 박스 */
+  color: #16a34a;
+  background: #dcfce7;
   white-space: nowrap;
+  transition: background 120ms ease, transform 80ms ease;
 }
+
 .region-tab.disabled {
   color: #C4C9BC;
   background: transparent;

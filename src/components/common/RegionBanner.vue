@@ -16,7 +16,7 @@ const regionToCategoryKey = {
 <template>
   <section class="hero card">
     <h1>SSAFY SPOT</h1>
-    <p>현지 SSAFY생이 추천하는 우리 동네 점심 맛집</p>
+    <p>현지 SSAFY생이 알려주는 서울 필수 즐길 거리</p>
   </section>
 
   <div class="region-grid">
