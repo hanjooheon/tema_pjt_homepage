@@ -1,8 +1,10 @@
 <script setup>
 import { ref } from 'vue'
 
-defineProps({
-  visible: { type: Boolean, default: false }
+const props = defineProps({
+  visible: { type: Boolean, default: false },
+  title: { type: String, default: '비밀번호 확인' },
+  placeholder: { type: String, default: '비밀번호 입력' }
 })
 
 const emit = defineEmits(['confirm', 'cancel'])
@@ -26,7 +28,6 @@ function handleCancel() {
   emit('cancel')
 }
 
-// 부모(BoardDetailView)에서 검증 실패 시 호출해 에러 메시지를 노출할 수 있도록 expose
 defineExpose({
   setError: (msg) => {
     error.value = msg
@@ -37,11 +38,11 @@ defineExpose({
 <template>
   <div v-if="visible" class="modal-backdrop" @click.self="handleCancel">
     <div class="modal card">
-      <h3>비밀번호 확인</h3>
+      <h3>{{ title }}</h3>
       <input
         v-model="password"
         type="password"
-        placeholder="비밀번호 입력"
+        :placeholder="placeholder"
         @keyup.enter="handleConfirm"
       />
       <p class="error" v-if="error">{{ error }}</p>

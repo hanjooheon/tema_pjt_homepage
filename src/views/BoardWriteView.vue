@@ -9,15 +9,19 @@ const props = defineProps({ id: { type: String, default: null } })
 const router = useRouter()
 
 const isEdit = computed(() => !!props.id)
-const initial = ref({ title: '', content: '' })
+const initial = ref({ title: '', content: '', nickname: '', category: '' })
 
 onMounted(() => {
   if (isEdit.value) {
     const existing = getPost(props.id)
     if (existing) {
-      initial.value = { title: existing.title, content: existing.content }
+      initial.value = {
+        title: existing.title,
+        content: existing.content,
+        nickname: existing.nickname ?? '',
+        category: existing.category ?? ''
+      }
     } else {
-      // 비정상 접근(직접 URL 진입 등) - 목록으로 되돌림
       router.replace({ name: 'board-list' })
     }
   }

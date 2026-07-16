@@ -1,19 +1,37 @@
 <script setup>
 import { RouterLink } from 'vue-router'
 import { REGIONS } from '../../data/regions.js'
+
+// region.code -> map categoryKey 매핑
+const regionToCategoryKey = {
+  attractions: 'tourist',
+  leisure: 'leports',
+  culture: 'culture',
+  shopping: 'shopping',
+  accommodation: 'lodging',
+  events: 'festival'
+}
 </script>
 
 <template>
   <section class="hero card">
     <h1>SSAFY SPOT</h1>
-    <p>현지 SSAFY생이 추천하는 우리 동네 점심 맛집</p>
+    <p>현지 SSAFY생이 알려주는 서울 필수 즐길 거리</p>
   </section>
 
   <div class="region-grid">
     <div v-for="region in REGIONS" :key="region.code" class="region-card card" :class="{ inactive: !region.active }">
       <div class="thumb" aria-hidden="true">{{ region.emoji }}</div>
       <p class="name">{{ region.name }}</p>
-      <RouterLink v-if="region.active" to="/board" class="link">바로가기 &gt;</RouterLink>
+      <RouterLink
+        v-if="region.active"
+        :to="regionToCategoryKey[region.code]
+          ? { path: '/places', query: { category: regionToCategoryKey[region.code] } }
+          : '/board'"
+        class="link"
+      >
+        바로가기 &gt;
+      </RouterLink>
       <span v-else class="link muted">준비중</span>
     </div>
   </div>

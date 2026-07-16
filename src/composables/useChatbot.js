@@ -1,12 +1,12 @@
 import { ref } from 'vue'
 import { askChatbot } from '../services/openaiService.js'
-import { loadRegionData } from '../services/dataService.js'
+import { getAllItems } from '../services/dataService.js'
 
 // 담당(WBS): 김소진 - "OpenAI 기반 지역 정보 챗봇 구현"
 // 대화 히스토리 유지 요구사항(RFP) 반영: 컴포넌트가 unmount 되어도 유지되도록 모듈 스코프에 상태를 둠.
 
 const messages = ref([
-  { role: 'assistant', content: '안녕하세요! 어떤 지역이 궁금하신가요?' }
+  { role: 'assistant', content: '안녕하세요!\nSSAFY 서울캠퍼스에 오신 것을 환영합니다. 🎉\n\n👋 서울 여행을 도와드릴게요.\n원하는 정보를 선택하거나 질문해 보세요.' }
 ])
 const isLoading = ref(false)
 const errorMessage = ref('')
@@ -21,10 +21,10 @@ export function useChatbot() {
     errorMessage.value = ''
 
     try {
-      const regionData = await loadRegionData()
+      const items = await getAllItems()
       // API 히스토리에는 role/content만 필요하므로 매핑해서 전달
       const history = messages.value.map(({ role, content }) => ({ role, content }))
-      const reply = await askChatbot(history, regionData)
+      const reply = await askChatbot(history, items)
       messages.value.push({ role: 'assistant', content: reply })
     } catch (err) {
       console.error(err)

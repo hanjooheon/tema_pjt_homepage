@@ -33,7 +33,11 @@ onMounted(() => {
 }
 
 .recent h2 {
-  font-size: 1.1rem;
+  font-family: 'Pretendard', system-ui, -apple-system, 'Noto Sans KR', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--color-primary-dark);
+  margin: 0 0 8px;
 }
 
 .recent-list {

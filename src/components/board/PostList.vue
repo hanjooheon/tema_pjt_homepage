@@ -7,9 +7,17 @@ const props = defineProps({
   pageSize: { type: Number, default: 7 }
 })
 
+const categoryLabels = {
+  tourist: '관광지',
+  leports: '레포츠',
+  culture: '문화시설',
+  shopping: '쇼핑',
+  lodging: '숙박',
+  festival: '축제공연행사'
+}
+
 const page = ref(1)
 
-// 검색어가 바뀌어 목록이 갱신되면 1페이지로 리셋
 watch(
   () => props.posts,
   () => {
@@ -25,7 +33,14 @@ const pagedPosts = computed(() => {
 })
 
 function formatDate(timestamp) {
-  return new Date(timestamp).toISOString().slice(2, 10).replace(/-/g, '.')
+  if (!timestamp) return '-'
+  try {
+    const date = new Date(timestamp)
+    if (isNaN(date.getTime())) return '-' // 올바르지 않은 날짜 형식일 때
+    return date.toISOString().slice(2, 10).replace(/-/g, '.')
+  } catch (e) {
+    return '-'
+  }
 }
 </script>
 
@@ -34,18 +49,31 @@ function formatDate(timestamp) {
     <thead>
       <tr>
         <th class="col-no">번호</th>
+        <th class="col-category">카테고리</th>
         <th>제목</th>
         <th class="col-date">작성일</th>
       </tr>
     </thead>
     <tbody>
       <tr v-if="posts.length === 0">
-        <td colspan="3" class="empty">등록된 게시글이 없습니다. 첫 글을 작성해 보세요!</td>
+        <td colspan="4" class="empty">등록된 게시글이 없습니다. 첫 글을 작성해 보세요!</td>
       </tr>
       <tr v-for="(post, idx) in pagedPosts" :key="post.id">
-        <td class="col-no">{{ posts.length - ((page - 1) * pageSize + idx) }}</td>
+        <td class="col-no">{{ posts.length - ((page - 1) * props.pageSize + idx) }}</td>
+        <td class="col-category">{{ categoryLabels[post.category] || '-' }}</td>
         <td>
-          <RouterLink :to="`/board/${post.id}`" class="title-link">{{ post.title }}</RouterLink>
+          <div class="title-row">
+            <div class="title-wrapper">
+              <RouterLink :to="`/board/${post.id}`" class="title-link">{{ post.title }}</RouterLink>
+            </div>
+            <div class="stats">
+              <span>좋아요 {{ post.likes ?? 0 }}</span>
+              <span>댓글 {{ (post.comments || []).length }}</span>
+            </div>
+          </div>
+          <div class="meta">
+            <span>{{ post.nickname || '익명' }}</span>
+          </div>
         </td>
         <td class="col-date">{{ formatDate(post.createdAt) }}</td>
       </tr>
@@ -96,12 +124,40 @@ th {
   color: var(--color-ink-muted);
 }
 
+.col-category {
+  width: 140px;
+  text-align: center;
+  color: var(--color-ink-muted);
+}
+
+.title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.title-wrapper {
+  flex: 1 1 auto;
+  min-width: 0; /* flex 자식 요소의 말줄임 적용을 위한 필수 설정 */
+}
+
 .title-link {
   font-weight: 600;
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; /* 제목이 너무 길면 ... 으로 표시 */
 }
 
 .title-link:hover {
   color: var(--color-primary);
+}
+
+.meta {
+  margin-top: 4px;
+  font-size: 0.8rem;
+  color: var(--color-ink-muted);
 }
 
 .empty {
@@ -120,5 +176,17 @@ th {
 .page-num.active {
   background: var(--color-primary-soft);
   color: var(--color-primary-dark);
+}
+
+.stats {
+  display: flex;
+  gap: 10px;
+  font-size: 0.8rem;
+  color: var(--color-ink-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: flex-end;
+  margin-left: 12px;
 }
 </style>
