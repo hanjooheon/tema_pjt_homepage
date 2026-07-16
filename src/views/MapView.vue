@@ -478,6 +478,12 @@ onBeforeUnmount(() => {
   padding: 24px 20px 40px;
   background: linear-gradient(180deg, #f8fbff 0%, #f5f7fb 100%);
   min-height: calc(100vh - 140px);
+  font-family: var(--font-body);
+}
+
+/* Ensure all text inside the map page uses the body font (override global headings) */
+.map-page, .map-page * {
+  font-family: var(--font-body) !important;
 }
 
 .map-toolbar {
@@ -548,7 +554,7 @@ h1 {
   display: grid;
   grid-template-columns: minmax(320px, 420px) 1fr;
   gap: 20px;
-  min-height: 720px;
+  height: 720px;
 }
 
 .place-list {
@@ -559,7 +565,8 @@ h1 {
   box-shadow: 0 10px 30px rgba(31, 41, 55, 0.06);
   display: flex;
   flex-direction: column;
-  min-height: 640px;
+  height: 720px;
+  overflow: hidden;
 }
 
 .list-header {
@@ -738,6 +745,7 @@ h1 {
 @media (max-width: 640px) {
   .map-page {
     padding: 16px 12px 30px;
+    font-family: var(--font-body);
   }
 
   .place-list {
