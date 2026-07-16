@@ -548,7 +548,7 @@ h1 {
   display: grid;
   grid-template-columns: minmax(320px, 420px) 1fr;
   gap: 20px;
-  min-height: 720px;
+  height: 720px;
 }
 
 .place-list {
@@ -559,7 +559,8 @@ h1 {
   box-shadow: 0 10px 30px rgba(31, 41, 55, 0.06);
   display: flex;
   flex-direction: column;
-  min-height: 640px;
+  height: 720px;
+  overflow: hidden;
 }
 
 .list-header {
