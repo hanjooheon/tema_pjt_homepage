@@ -9,7 +9,8 @@ const input = ref('')
 const scrollArea = ref(null)
 const quickRegions = REGIONS.map((region) => ({
   code: region.code,
-  label: region.name
+  label: region.name,
+  emoji: region.emoji
 }))
 
 const { messages, isLoading, sendMessage } = useChatbot()
@@ -44,14 +45,14 @@ watch(messages, async () => {
   <!-- 펼친 상태: 대화창 (모바일에서는 CSS로 전체 화면 처리) -->
   <div v-else class="chat-window card">
     <header class="chat-header">
-      <span>LocalHub 챗봇</span>
+      <span>SSAFY SPOT 챗봇</span>
       <button type="button" class="close-btn" @click="isOpen = false" aria-label="닫기">✕</button>
     </header>
 
     <div ref="scrollArea" class="chat-body">
       <ChatMessage v-if="messages.length > 0" :role="messages[0].role" :content="messages[0].content" />
       <div v-if="messages.length === 1" class="empty-state">
-        <p>어떤 지역이 궁금하신가요?</p>
+        <p>어떤 카테고리가 궁금하신가요?</p>
         <div class="region-buttons">
           <button
             v-for="region in quickRegions"
@@ -60,7 +61,8 @@ watch(messages, async () => {
             class="region-chip"
             @click="selectRegion(region.label)"
           >
-            {{ region.label }}
+            <span class="region-emoji">{{ region.emoji }}</span>
+            <span class="region-label">{{ region.label }}</span>
           </button>
         </div>
       </div>
@@ -69,7 +71,7 @@ watch(messages, async () => {
     </div>
 
     <form class="chat-input" @submit.prevent="handleSend">
-      <input v-model="input" type="text" placeholder="메시지를 입력하세요" :disabled="isLoading" />
+      <input v-model="input" type="text" placeholder="서울 여행이 궁금하다면 질문해보세요!" :disabled="isLoading" />
       <button type="submit" class="btn btn-primary" :disabled="isLoading">전송</button>
     </form>
   </div>
@@ -92,7 +94,7 @@ watch(messages, async () => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  z-index: 40;
+  z-index: 99999;
 }
 
 .fab-label {
@@ -104,12 +106,12 @@ watch(messages, async () => {
   position: fixed;
   right: 20px;
   bottom: 20px;
-  width: 320px;
-  height: 440px;
+  width: 420px;
+  height: 560px;
   display: flex;
   flex-direction: column;
   box-shadow: var(--shadow-float);
-  z-index: 40;
+  z-index: 99999;
   overflow: hidden;
 }
 
@@ -170,6 +172,15 @@ watch(messages, async () => {
   padding: 6px 10px;
   font-size: 0.75rem;
   cursor: pointer;
+}
+
+.region-emoji {
+  margin-right: 6px;
+  font-size: 0.95rem;
+}
+
+.region-label {
+  vertical-align: middle;
 }
 
 .chat-input {

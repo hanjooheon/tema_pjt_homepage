@@ -56,7 +56,7 @@ export function incrementViews(id) {
   }
 }
 
-export function createPost({ title, content, nickname, password }) {
+export function createPost({ title, content, nickname, password, category, placeId, placeName }) {
   const posts = readPosts()
   const now = Date.now()
   const newPost = {
@@ -64,6 +64,9 @@ export function createPost({ title, content, nickname, password }) {
     title,
     content,
     nickname: nickname?.trim() || '익명',
+    category: category || '',
+    placeId: placeId || '',
+    placeName: placeName || '',
     password,
     createdAt: now,
     updatedAt: now,
@@ -82,7 +85,7 @@ export function verifyPassword(id, password) {
   return !!post && post.password === password
 }
 
-export function updatePost(id, { title, content, nickname }, password) {
+export function updatePost(id, { title, content, nickname, category, placeId, placeName }, password) {
   if (!verifyPassword(id, password)) {
     return { ok: false, error: '비밀번호가 일치하지 않습니다.' }
   }
@@ -91,6 +94,9 @@ export function updatePost(id, { title, content, nickname }, password) {
   target.title = title
   target.content = content
   target.nickname = nickname?.trim() || target.nickname || '익명'
+  target.category = category || target.category || ''
+  target.placeId = placeId || target.placeId || ''
+  target.placeName = placeName || target.placeName || ''
   target.updatedAt = Date.now()
   writeList(STORAGE_KEY, posts)
   return { ok: true }

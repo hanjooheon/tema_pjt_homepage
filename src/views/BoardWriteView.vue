@@ -9,7 +9,7 @@ const props = defineProps({ id: { type: String, default: null } })
 const router = useRouter()
 
 const isEdit = computed(() => !!props.id)
-const initial = ref({ title: '', content: '', nickname: '' })
+const initial = ref({ title: '', content: '', nickname: '', category: '' })
 
 onMounted(() => {
   if (isEdit.value) {
@@ -18,7 +18,8 @@ onMounted(() => {
       initial.value = {
         title: existing.title,
         content: existing.content,
-        nickname: existing.nickname ?? ''
+        nickname: existing.nickname ?? '',
+        category: existing.category ?? ''
       }
     } else {
       router.replace({ name: 'board-list' })

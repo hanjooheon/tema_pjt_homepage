@@ -183,3 +183,25 @@ input, textarea {
   resize: vertical;
   min-height: 160px;
 }
+
+/* Map 및 전체 페이지 폰트 강제 적용 (로고와 홈 히어로 제목은 예외) */
+:root { --font-category: var(--font-body); }
+
+body, .page, .map-page, .map-page *, .place-list, .place-list *, .leaflet-container, .leaflet-popup, .leaflet-popup-content, .leaflet-popup-content * {
+  font-family: var(--font-category) !important;
+}
+
+/* 예외: 사이트 로고와 홈 히어로 제목은 기존 폰트 유지 */
+.logo,
+.hero h1 {
+  font-family: 'Comic Sans MS', 'Trebuchet MS', cursive !important;
+}
+
+/* Ensure place-detail page and map popups use the category/button font */
+.detail, .detail * {
+  font-family: var(--font-category) !important;
+}
+
+.leaflet-popup, .leaflet-popup-content, .leaflet-popup-content * {
+  font-family: var(--font-category) !important;
+}

@@ -25,16 +25,16 @@ const regionToCategoryKey = {
 
       <nav class="region-tabs">
         <RouterLink
-  v-for="region in REGIONS"
-  :key="region.code"
-  :to="region.active
-    ? (regionToCategoryKey[region.code]
-      ? { path: '/places', query: { category: regionToCategoryKey[region.code] } }
-      : '/board')
-    : '#'"
-  class="region-tab"
-  :class="{ active: region.active && (route.path.startsWith('/places') ? route.query.category === regionToCategoryKey[region.code] : (route.name && String(route.name).startsWith('board'))), disabled: !region.active }"
->
+    v-for="region in REGIONS"
+    :key="region.code"
+    :to="region.active
+      ? (regionToCategoryKey[region.code]
+        ? { path: '/places', query: { category: regionToCategoryKey[region.code] } }
+        : '/board')
+      : '#'"
+    class="region-tab"
+    :class="{ active: region.active && route.path.startsWith('/places') && route.query.category === regionToCategoryKey[region.code], disabled: !region.active }"
+  >
   {{ region.name }}
 </RouterLink>
 
@@ -106,10 +106,10 @@ const regionToCategoryKey = {
 }
 
 .region-tab.active {
-  color: #16a34a;            /* 초록색 글자 */
-  background: #dcfce7;       /* 연두빛 배경(네모) */
+  color: #fff;               /* 흰 글자 */
+  background: var(--color-primary-dark); /* 진한 초록 배경 */
   border-radius: var(--radius-sm);
-  box-shadow: 0 0 0 3px rgba(22,163,74,0.06); /* 선택 강조(선택 사항) */
+  box-shadow: 0 4px 12px rgba(22,79,70,0.12); /* 선택 강조 그림자 */
 }
 
 
