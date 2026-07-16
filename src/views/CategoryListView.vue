@@ -60,8 +60,12 @@ watch(
   () => {
     load()
     keyword.value = ''
+    currentPage.value = 1
   }
 )
+
+// reset page when keyword changes
+watch(keyword, () => { currentPage.value = 1 })
 
 const filteredItems = computed(() => {
   const q = keyword.value.trim().toLowerCase()
@@ -70,6 +74,34 @@ const filteredItems = computed(() => {
     return (it.name || '').toLowerCase().includes(q) || (it.address || '').toLowerCase().includes(q)
   })
 })
+
+// Pagination state (default 10 items per page; 6 for festival category)
+const currentPage = ref(1)
+const pageSize = computed(() => (route.query.category === 'festival' ? 6 : 10))
+const totalPages = computed(() => Math.max(1, Math.ceil(filteredItems.value.length / pageSize.value)))
+const pagedItems = computed(() => {
+  const start = (currentPage.value - 1) * pageSize.value
+  return filteredItems.value.slice(start, start + pageSize.value)
+})
+
+// reset page when pageSize changes (e.g., switching to festival)
+watch(pageSize, () => { currentPage.value = 1 })
+
+// Block pagination (show 1-10, 11-20, ...)
+const blockSize = 10
+const currentBlockIndex = computed(() => Math.floor((currentPage.value - 1) / blockSize))
+const blockStart = computed(() => currentBlockIndex.value * blockSize + 1)
+const blockEnd = computed(() => Math.min(totalPages.value, blockStart.value + blockSize - 1))
+const pageNumbers = computed(() => {
+  const arr = []
+  for (let i = blockStart.value; i <= blockEnd.value; i++) arr.push(i)
+  return arr
+})
+
+function prevPage() { currentPage.value = Math.max(1, currentPage.value - 1) }
+function nextPage() { currentPage.value = Math.min(totalPages.value, currentPage.value + 1) }
+function prevBlock() { const newStart = Math.max(1, blockStart.value - blockSize); currentPage.value = newStart }
+function nextBlock() { const newStart = Math.min(totalPages.value, blockStart.value + blockSize); currentPage.value = newStart }
 
 function restoreScroll() {
   const category = route.query.category || 'all'
@@ -106,7 +138,7 @@ function goToDetail(item) {
       <div v-if="loading">로딩 중...</div>
 
       <ul v-else class="place-list-simple">
-        <li v-for="item in filteredItems" :key="item.id" class="place-item" @click="goToDetail(item)" style="cursor:pointer">
+        <li v-for="item in pagedItems" :key="item.id" class="place-item" @click="goToDetail(item)" style="cursor:pointer">
           <strong class="place-name">{{ item.name }}</strong>
           <p class="place-address">{{ item.address }}</p>
           <p class="place-tel" v-if="item.tel">전화: {{ item.tel }}</p>
@@ -114,6 +146,25 @@ function goToDetail(item) {
       </ul>
 
       <div v-if="!loading && filteredItems.length === 0" class="empty">검색 결과가 없습니다.</div>
+
+      <!-- Pagination -->
+      <div v-if="filteredItems.length > pageSize" class="pagination">
+        <button class="btn" :disabled="blockStart === 1" @click="prevBlock"><<</button>
+        <button class="btn" :disabled="currentPage === 1" @click="prevPage"><</button>
+
+        <button
+          v-for="n in pageNumbers"
+          :key="n"
+          class="btn"
+          :class="{ 'btn-primary': n === currentPage }"
+          @click="currentPage = n"
+        >
+          {{ n }}
+        </button>
+
+        <button class="btn" :disabled="currentPage === totalPages" @click="nextPage">></button>
+        <button class="btn" :disabled="blockEnd === totalPages" @click="nextBlock">>></button>
+      </div>
     </section>
   </main>
 </template>
@@ -156,4 +207,30 @@ h1 {
 .place-name { display: block; font-weight: 700; }
 .place-address { margin: 6px 0 0; color: var(--color-ink-muted); }
 .empty { color: var(--color-ink-muted); margin-top: 12px; }
+
+.pagination {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+  align-items: center;
+  width: 100%;
+  flex-wrap: wrap;
+  /* center across the full page */
+  justify-content: center;
+  /* allow horizontal scroll on small screens */
+  overflow-x: auto;
+  padding: 6px 0;
+}
+
+.pagination .btn {
+  padding: 6px 10px;
+  min-width: 38px;
+  flex: 0 0 auto;
+}
+
+.pagination .btn-primary {
+  background: var(--color-primary);
+  color: #fff;
+  border-color: var(--color-primary);
+}
 </style>

@@ -6,7 +6,7 @@ import { getAllItems } from '../services/dataService.js'
 // 대화 히스토리 유지 요구사항(RFP) 반영: 컴포넌트가 unmount 되어도 유지되도록 모듈 스코프에 상태를 둠.
 
 const messages = ref([
-  { role: 'assistant', content: '안녕하세요! 서울 지역 정보에 대해 무엇이든 물어보세요 🙂' }
+  { role: 'assistant', content: '안녕하세요!\nSSAFY 서울캠퍼스에 오신 것을 환영합니다. 🎉\n\n👋 서울 여행을 도와드릴게요.\n원하는 정보를 선택하거나 질문해 보세요.' }
 ])
 const isLoading = ref(false)
 const errorMessage = ref('')

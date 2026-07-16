@@ -7,6 +7,15 @@ const props = defineProps({
   pageSize: { type: Number, default: 7 }
 })
 
+const categoryLabels = {
+  tourist: '관광지',
+  leports: '레포츠',
+  culture: '문화시설',
+  shopping: '쇼핑',
+  lodging: '숙박',
+  festival: '축제공연행사'
+}
+
 const page = ref(1)
 
 watch(
@@ -40,16 +49,18 @@ function formatDate(timestamp) {
     <thead>
       <tr>
         <th class="col-no">번호</th>
+        <th class="col-category">카테고리</th>
         <th>제목</th>
         <th class="col-date">작성일</th>
       </tr>
     </thead>
     <tbody>
       <tr v-if="posts.length === 0">
-        <td colspan="3" class="empty">등록된 게시글이 없습니다. 첫 글을 작성해 보세요!</td>
+        <td colspan="4" class="empty">등록된 게시글이 없습니다. 첫 글을 작성해 보세요!</td>
       </tr>
       <tr v-for="(post, idx) in pagedPosts" :key="post.id">
-        <td class="col-no">{{ posts.length - ((page - 1) * pageSize + idx) }}</td>
+        <td class="col-no">{{ posts.length - ((page - 1) * props.pageSize + idx) }}</td>
+        <td class="col-category">{{ categoryLabels[post.category] || '-' }}</td>
         <td>
           <div class="title-row">
             <div class="title-wrapper">
@@ -113,6 +124,12 @@ th {
   color: var(--color-ink-muted);
 }
 
+.col-category {
+  width: 140px;
+  text-align: center;
+  color: var(--color-ink-muted);
+}
+
 .title-row {
   display: flex;
   justify-content: space-between;
@@ -121,7 +138,7 @@ th {
 }
 
 .title-wrapper {
-  flex: 1;
+  flex: 1 1 auto;
   min-width: 0; /* flex 자식 요소의 말줄임 적용을 위한 필수 설정 */
 }
 
@@ -167,6 +184,9 @@ th {
   font-size: 0.8rem;
   color: var(--color-ink-muted);
   white-space: nowrap;
-  flex-shrink: 0; 
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: flex-end;
+  margin-left: 12px;
 }
 </style>
