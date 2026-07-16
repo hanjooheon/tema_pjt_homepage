@@ -47,7 +47,7 @@ const regionToCategoryKey = {
         </RouterLink>
       </nav>
 
-      <button class="search-icon" aria-label="검색" type="button">⌕</button>
+      <!-- search icon removed as requested -->
     </div>
   </header>
 </template>
