@@ -33,7 +33,7 @@ function normalizeItem(raw, categoryKey) {
     name: raw.title || '',
     address: [raw.addr1, raw.addr2].filter(Boolean).join(' ').trim(),
     tel: raw.tel || raw.phone || raw.telephone || raw.telphone || raw.tel_no || raw.tel1 || '',
-    image: raw.firstimage || raw.firstimage2 || raw.image || '',
+    image: raw.firstimage|| raw.image || '',
     lat: Number.isFinite(lat) ? lat : null,
     lng: Number.isFinite(lng) ? lng : null
   }
@@ -84,4 +84,27 @@ export async function getAllItems() {
 export async function getItemsByCategory(categoryKey) {
   const all = await getAllItems()
   return all.filter((item) => item.categoryKey === categoryKey)
+}
+
+/**
+ * 특정 id로 단일 아이템을 조회합니다. 반환값은 정규화된 필드와 원본 raw 객체를 포함합니다.
+ */
+export async function getItemById(id) {
+  const all = await getAllItems()
+  const item = all.find((i) => String(i.id) === String(id))
+  if (!item) return null
+
+  const path = CATEGORY_FILES[item.categoryKey]
+  if (!path) return item
+
+  try {
+    const res = await fetch(path)
+    if (!res.ok) return item
+    const data = await res.json()
+    const raw = (data.items || []).find((r) => String(r.contentid) === String(id))
+    return { ...item, raw: raw || null }
+  } catch (e) {
+    console.error('[dataService] getItemById error', e)
+    return item
+  }
 }

@@ -191,7 +191,6 @@ function renderMarkers(L) {
     // collect images from common fields
     const images = []
     if (place.firstimage) images.push(place.firstimage)
-    if (place.firstimage2) images.push(place.firstimage2)
     if (place.image) images.push(place.image)
     if (place.images && Array.isArray(place.images)) images.push(...place.images)
     // dedupe & filter falsy
