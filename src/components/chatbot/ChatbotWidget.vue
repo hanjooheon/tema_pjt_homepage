@@ -14,8 +14,8 @@ const quickRegions = REGIONS.map((region) => ({
 
 const { messages, isLoading, sendMessage } = useChatbot()
 
-async function handleSend(text = input.value) {
-  const value = text?.trim()
+async function handleSend(text) {
+  const value = (typeof text === 'string' ? text : input.value)?.trim()
   if (!value) return
   input.value = ''
   await sendMessage(value)
