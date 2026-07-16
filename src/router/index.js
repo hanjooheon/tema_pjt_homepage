@@ -39,6 +39,13 @@ const routes = [
     name: 'places-list',
     component: () => import('../views/CategoryListView.vue')
   }
+  ,
+  {
+    path: '/places/:id',
+    name: 'place-detail',
+    component: () => import('../views/PlaceDetailView.vue'),
+    props: true
+  }
 ]
 
 const router = createRouter({

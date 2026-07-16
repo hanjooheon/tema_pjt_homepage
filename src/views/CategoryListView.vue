@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref, watch, computed } from 'vue'
+import { onMounted, ref, watch, computed, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getItemsByCategory } from '../services/dataService.js'
 
@@ -48,6 +48,8 @@ async function load() {
 
   items.value = await getItemsByCategory(category)
   loading.value = false
+  await nextTick()
+  restoreScroll()
 }
 
 onMounted(load)
@@ -68,6 +70,24 @@ const filteredItems = computed(() => {
     return (it.name || '').toLowerCase().includes(q) || (it.address || '').toLowerCase().includes(q)
   })
 })
+
+function restoreScroll() {
+  const category = route.query.category || 'all'
+  const key = `places-scroll-${category}`
+  const val = sessionStorage.getItem(key)
+  if (val) {
+    const y = Number(val) || 0
+    window.scrollTo(0, y)
+    sessionStorage.removeItem(key)
+  }
+}
+
+function goToDetail(item) {
+  const category = route.query.category
+  const key = `places-scroll-${category || 'all'}`
+  try { sessionStorage.setItem(key, String(window.scrollY || window.pageYOffset || 0)) } catch (e) {}
+  router.push({ name: 'place-detail', params: { id: item.id }, query: { category } })
+}
 </script>
 
 <template>
@@ -86,7 +106,7 @@ const filteredItems = computed(() => {
       <div v-if="loading">로딩 중...</div>
 
       <ul v-else class="place-list-simple">
-        <li v-for="item in filteredItems" :key="item.id" class="place-item">
+        <li v-for="item in filteredItems" :key="item.id" class="place-item" @click="goToDetail(item)" style="cursor:pointer">
           <strong class="place-name">{{ item.name }}</strong>
           <p class="place-address">{{ item.address }}</p>
           <p class="place-tel" v-if="item.tel">전화: {{ item.tel }}</p>
