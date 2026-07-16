@@ -36,9 +36,22 @@ export async function handler(event) {
     const lastUser = (history || []).slice().reverse().find(h => h.role === 'user')?.content || ''
     const tokens = tokenize(lastUser)
 
+    // assistant 히스토리에 이미 데이터 기반 정보가 포함되었는지 확인
+    const normalizeText = (t) => (t || '').toString().toLowerCase().replace(/[^a-z0-9가-힣]/g, '')
+    function assistantIncludedContains(normName) {
+      if (!normName) return false
+      return (history || []).some(h => h.role === 'assistant' && normalizeText(h.content).includes(normName))
+    }
+
+    // 기본 스코어링 후, 이미 assistant에 포함된 장소는 결과에서 제외하여
+    // 최초 1회만 데이터 기반 출력을 하도록 한다.
     const scored = (items || []).map((it) => ({ it, score: scoreItem(it, tokens) }))
       .filter(s => s.score > 0)
       .sort((a, b) => b.score - a.score)
+      .filter(s => {
+        const n = normalizeText(s.it.name)
+        return !assistantIncludedContains(n)
+      })
 
     const top = scored.slice(0, 8).map(s => s.it)
 
@@ -53,16 +66,12 @@ export async function handler(event) {
 
     // 추가 우선 처리: 사용자의 질의와 항목 이름이 정확히 매칭되는 경우,
     // 해당 항목의 데이터를 '권위 있는 정보'로서 모델이 반드시 우선 사용하도록 지시합니다.
-    function normalizeText(t) {
-      return (t || '').toString().toLowerCase().replace(/[^a-z0-9가-힣]/g, '')
-    }
-
     const normLast = normalizeText(lastUser)
     const exactMatches = (items || []).filter(it => {
       const normName = normalizeText(it.name)
       if (!normName) return false
       return normLast.includes(normName) || normName.includes(normLast)
-    })
+    }).filter(it => !assistantIncludedContains(normalizeText(it.name)))
 
     const authoritativeMsg = exactMatches.length > 0
       ? `중요: 아래 정보는 제공된 데이터에서 온 권위 있는 장소 정보입니다. 사용자가 장소의 주소, 전화번호, 행사정보 등을 묻는 경우, 반드시 먼저 아래 정보를 근거로 답변하세요. 추가 설명은 가능하지만 먼저 데이터 기반 응답을 제공하십시오.\n\n${exactMatches.map(i => `- 이름: ${i.name}\n  주소: ${i.address || '정보 없음'}\n  전화: ${i.tel || '정보 없음'}\n  카테고리: ${i.categoryKey || '없음'}`).join('\n\n')}`
